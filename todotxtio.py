@@ -1,6 +1,8 @@
 import os
 import re
 
+from functools import total_ordering
+
 __version__ = '0.2.2'
 
 __all__ = [
@@ -163,7 +165,7 @@ def to_string(todos):
     """
     return '\n'.join([str(todo) for todo in todos])
 
-
+@total_ordering
 class Todo:
     """Represent one todo.
 
@@ -270,6 +272,30 @@ class Todo:
     def __repr__(self):
         """Call the __str__ method to return a textual representation of this Todo object."""
         return self.__str__()
+
+    def __lt__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        # Comparison: completed < notcompleted
+        if self.completed != other.completed:
+            return self.completed > other.completed
+
+        # Comparison: Higher Priority > Lower Priority
+        if self.priority and other.priority:
+            return self.priority < other.priority
+        elif self.priority or other.priority:
+            if self.priority:
+                return False
+            else:
+                return True
+
+        # Comparison: Newer Creation Date < Older Creation Date
+        if self.creation_date and other.creation_date:
+            return self.creation_date < other.creation_date
+        else:
+            return None
+
 
 
 def search(todos, text=None, completed=None, completion_date=None, priority=None, creation_date=None, projects=None, contexts=None, tags=None):
